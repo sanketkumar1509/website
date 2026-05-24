@@ -562,49 +562,55 @@
     </footer>
 </div>
 
-<script>
-    // Animation Text is Sanket Kumar
-    const textToAnimate = "Sanket Kumar"; 
-    const textContainer = document.getElementById('splash-text-container');
-    const toggleButton = document.getElementById('toggle-mode-btn');
-    const navLinks = document.querySelectorAll('#main-nav .nav-link');
-    const homeView = document.getElementById('home-section');
-    const resumeView = document.getElementById('resume-section');
+// --- Config (single source of truth) ---
+const CONFIG = {
+  text: "Sanket Kumar",
+  baseDelay: 0.5,
+  letterStagger: 0.15,
+};
 
+const DIRECTIONS = [
+  { x: '-100vw', y: '-50vh',  rotate: '45deg'  },
+  { x: '100vw',  y: '-50vh',  rotate: '-45deg' },
+  { x: '-80vw',  y: '80vh',   rotate: '-30deg' },
+  { x: '80vw',   y: '80vh',   rotate: '30deg'  },
+  { x: '0',      y: '-100vh', rotate: '15deg'  },
+  { x: '0',      y: '100vh',  rotate: '-15deg' },
+  { x: '-150vw', y: '0',      rotate: '0deg'   },
+  { x: '150vw',  y: '0',      rotate: '0deg'   },
+];
 
-    // Directions array for the dynamic entrance effect (used for both splash text and nav links)
-    const directions = [
-        { x: '-100vw', y: '-50vh', rotate: '45deg' }, 
-        { x: '100vw', y: '-50vh', rotate: '-45deg' },
-        { x: '-80vw', y: '80vh', rotate: '-30deg' },  
-        { x: '80vw', y: '80vh', rotate: '30deg' },   
-        { x: '0', y: '-100vh', rotate: '15deg' },     
-        { x: '0', y: '100vh', rotate: '-15deg' },     
-        { x: '-150vw', y: '0', rotate: '0deg' },      
-        { x: '150vw', y: '0', rotate: '0deg' },     
-        { x: '-70vw', y: '-20vh', rotate: '20deg' },  
-        { x: '70vw', y: '20vh', rotate: '-20deg' },   
-        { x: '20vw', y: '-70vh', rotate: '10deg' },   
-        { x: '-20vw', y: '70vh', rotate: '-10deg' },  
-        { x: '50vw', y: '-30vh', rotate: '0deg' } 
-    ];
+// --- Pure functions ---
+function getDirection(index) {
+  return DIRECTIONS[index % DIRECTIONS.length];
+}
 
-    // --- Dynamic Letter Creation (Splash) ---
-    for (let i = 0; i < textToAnimate.length; i++) {
-        const letterSpan = document.createElement('span');
-        letterSpan.textContent = textToAnimate[i] === ' ' ? '\xa0' : textToAnimate[i];
-        letterSpan.classList.add('letter');
-        
-        const dirIndex = i % directions.length; 
-        const dir = directions[dirIndex];
+function createLetterSpan(char, index) {
+  const span = document.createElement('span');
+  span.classList.add('letter');
+  span.textContent = char === ' ' ? '\xa0' : char;
 
-        letterSpan.style.setProperty('--startX', dir.x);
-        letterSpan.style.setProperty('--startY', dir.y);
-        letterSpan.style.setProperty('--startRotate', dir.rotate);
-        
-        letterSpan.style.animationDelay = `${0.15 * i + 0.5}s`; 
-        textContainer.appendChild(letterSpan);
-    }
+  const { x, y, rotate } = getDirection(index);
+  span.style.setProperty('--startX', x);
+  span.style.setProperty('--startY', y);
+  span.style.setProperty('--startRotate', rotate);
+  span.style.animationDelay =
+    `${CONFIG.baseDelay + CONFIG.letterStagger * index}s`;
+
+  return span;
+}
+
+// --- DOM init ---
+function initSplashText(container, text) {
+  const fragment = document.createDocumentFragment();
+  [...text].forEach((char, i) => fragment.appendChild(createLetterSpan(char, i)));
+  container.appendChild(fragment);
+}
+
+initSplashText(
+  document.getElementById('splash-text-container'),
+  CONFIG.text
+);
     
     // --- Navigation Entrance Animation Setup ---
     const startNavAnimation = () => {
